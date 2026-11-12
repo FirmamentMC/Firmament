@@ -75,11 +75,13 @@ public class RenderLineRenderer extends PictureInPictureRenderer<RenderLineState
 
 			buffer
 				.addVertex(pose, lowX, lowY, 0F)
+				.setColor(state.colour())
 				.setNormal(pose, norm)
 				.setLineWidth(state.lineWidth());
 
 			buffer
 				.addVertex(pose, highX, highY, 0F)
+				.setColor(state.colour())
 				.setNormal(pose, norm)
 				.setLineWidth(state.lineWidth());
 		});
