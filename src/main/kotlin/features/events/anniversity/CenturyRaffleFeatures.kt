@@ -6,6 +6,7 @@ import kotlin.jvm.optionals.getOrNull
 import net.minecraft.world.entity.player.Player
 import net.minecraft.network.chat.Style
 import net.minecraft.ChatFormatting
+import moe.nea.firmament.util.color
 import moe.nea.firmament.annotations.Subscribe
 import moe.nea.firmament.events.EntityRenderTintEvent
 import moe.nea.firmament.util.MC

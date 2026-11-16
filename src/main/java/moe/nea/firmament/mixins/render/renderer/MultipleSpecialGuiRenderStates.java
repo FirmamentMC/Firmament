@@ -10,7 +10,7 @@ import moe.nea.firmament.util.render.MultiSpecialGuiRenderState;
 import moe.nea.firmament.util.render.MultiSpecialGuiRenderer;
 import net.minecraft.client.gui.render.GuiRenderer;
 import net.minecraft.client.gui.render.pip.PictureInPictureRenderer;
-import net.minecraft.client.renderer.MultiBufferSource;
+import net.minecraft.client.renderer.feature.FeatureRenderDispatcher;
 import net.minecraft.client.renderer.state.gui.GuiRenderState;
 import net.minecraft.client.renderer.state.gui.pip.PictureInPictureRenderState;
 import org.spongepowered.asm.mixin.Final;
@@ -31,7 +31,7 @@ import java.util.Map;
 public class MultipleSpecialGuiRenderStates {
 	@Shadow
 	@Final
-	private MultiBufferSource.BufferSource bufferSource;
+	private FeatureRenderDispatcher featureRenderDispatcher;
 	@Shadow
 	@Final
 	private GuiRenderState renderState;
@@ -43,8 +43,8 @@ public class MultipleSpecialGuiRenderStates {
 		if (picturesInPictureState instanceof MultiSpecialGuiRenderState multiState) {
 			@SuppressWarnings({"resource", "unchecked"})
 			var renderer = (PictureInPictureRenderer<T>) multiRenderers
-				.computeIfAbsent(multiState, elementState$ -> elementState$.createRenderer(this.bufferSource));
-			renderer.prepare(picturesInPictureState, renderState, guiScale);
+				.computeIfAbsent(multiState, elementState$ -> elementState$.createRenderer());
+			renderer.prepare(picturesInPictureState, renderState, this.featureRenderDispatcher, guiScale);
 			ci.cancel();
 		}
 	}
@@ -54,8 +54,8 @@ public class MultipleSpecialGuiRenderStates {
 		multiRenderers.values().forEach(PictureInPictureRenderer::close);
 	}
 
-	@Inject(method = "render(Lcom/mojang/blaze3d/buffers/GpuBufferSlice;)V", at = @At(value = "INVOKE", target = "Lnet/minecraft/client/gui/render/GuiRenderer;clearUnusedOversizedItemRenderers()V"))
-	private void onAfterRender(GpuBufferSlice fogBuffer, CallbackInfo ci) {
+	@Inject(method = "render()V", at = @At(value = "INVOKE", target = "Lnet/minecraft/client/gui/render/GuiRenderer;clearUnusedOversizedItemRenderers()V"))
+	private void onAfterRender(CallbackInfo ci) {
 		multiRenderers.values().removeIf(it -> {
 			if (it.consumeRender()) {
 				return false;

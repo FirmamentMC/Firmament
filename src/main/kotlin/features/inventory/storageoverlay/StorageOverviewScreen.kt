@@ -21,9 +21,9 @@ import moe.nea.firmament.util.toShedaniel
 class StorageOverviewScreen() : Screen(Component.empty()) {
     companion object {
         val emptyStorageSlotItems = listOf<Item>(
-            Blocks.RED_STAINED_GLASS_PANE.asItem(),
-            Blocks.BROWN_STAINED_GLASS_PANE.asItem(),
-            Items.GRAY_DYE
+            Items.STAINED_GLASS_PANE.pick(DyeColor.RED),
+            Items.STAINED_GLASS_PANE.pick(DyeColor.BROWN),
+            Items.DYE.pick(DyeColor.GRAY)
         )
         val pageWidth get() = 19 * 9
 

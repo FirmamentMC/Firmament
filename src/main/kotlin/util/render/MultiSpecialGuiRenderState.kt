@@ -2,13 +2,12 @@ package moe.nea.firmament.util.render
 
 import net.minecraft.client.gui.navigation.ScreenRectangle
 import net.minecraft.client.gui.render.pip.PictureInPictureRenderer
-import net.minecraft.client.renderer.MultiBufferSource
 import net.minecraft.client.renderer.state.gui.GuiRenderState
 import net.minecraft.client.renderer.state.gui.pip.PictureInPictureRenderState
 
 abstract class MultiSpecialGuiRenderState : PictureInPictureRenderState {
 	// I wish i had manifolds @Self type here... Maybe i should switch to java after all :(
-	abstract fun createRenderer(vertexConsumers: MultiBufferSource.BufferSource): MultiSpecialGuiRenderer<out MultiSpecialGuiRenderState>
+	abstract fun createRenderer(): MultiSpecialGuiRenderer<out MultiSpecialGuiRenderState>
 	abstract val x1: Int
 	abstract val x2: Int
 	abstract val y1: Int
@@ -32,9 +31,7 @@ abstract class MultiSpecialGuiRenderState : PictureInPictureRenderState {
 
 }
 
-abstract class MultiSpecialGuiRenderer<T : MultiSpecialGuiRenderState>(
-	vertexConsumers: MultiBufferSource.BufferSource
-) : PictureInPictureRenderer<T>(vertexConsumers) {
+abstract class MultiSpecialGuiRenderer<T : MultiSpecialGuiRenderState>() : PictureInPictureRenderer<T>() {
 	var wasUsedThisFrame = false
 	fun consumeRender(): Boolean {
 		return wasUsedThisFrame.also { wasUsedThisFrame = false }

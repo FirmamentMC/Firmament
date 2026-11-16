@@ -17,6 +17,7 @@ import moe.nea.firmament.events.TickEvent
 import moe.nea.firmament.events.WorldReadyEvent
 import moe.nea.firmament.events.WorldRenderLastEvent
 import moe.nea.firmament.util.MC
+import moe.nea.firmament.util.center
 import moe.nea.firmament.util.data.Config
 import moe.nea.firmament.util.data.ManagedConfig
 import moe.nea.firmament.util.mc.asFakeServer

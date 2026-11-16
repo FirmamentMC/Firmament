@@ -8,6 +8,8 @@ import net.minecraft.resources.Identifier
 import moe.nea.firmament.annotations.Subscribe
 import moe.nea.firmament.events.HotbarItemRenderEvent
 import moe.nea.firmament.events.SlotRenderEvents
+import moe.nea.firmament.util.MC
+import moe.nea.firmament.util.color
 import moe.nea.firmament.util.data.Config
 import moe.nea.firmament.util.data.ManagedConfig
 import moe.nea.firmament.util.mc.accessor

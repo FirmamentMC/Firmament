@@ -2,7 +2,7 @@ package moe.nea.firmament.features.debug
 
 import com.mojang.serialization.JsonOps
 import kotlin.jvm.optionals.getOrNull
-import net.minecraft.advancements.criterion.NbtPredicate
+import net.minecraft.advancements.predicates.NbtPredicate
 import net.minecraft.client.gui.screens.inventory.AbstractContainerScreen
 import net.minecraft.core.component.DataComponents
 import net.minecraft.nbt.ListTag

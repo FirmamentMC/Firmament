@@ -1,14 +1,15 @@
 package util.render
 
+import com.mojang.blaze3d.pipeline.BindGroupLayout
 import com.mojang.blaze3d.pipeline.BlendFunction
 import com.mojang.blaze3d.pipeline.ColorTargetState
 import com.mojang.blaze3d.pipeline.DepthStencilState
 import com.mojang.blaze3d.pipeline.RenderPipeline
 import com.mojang.blaze3d.platform.CompareOp
 
+import com.mojang.blaze3d.PrimitiveTopology
 import com.mojang.blaze3d.shaders.UniformType
 import com.mojang.blaze3d.vertex.DefaultVertexFormat
-import com.mojang.blaze3d.vertex.VertexFormat.Mode
 import java.util.function.Function
 import net.minecraft.client.renderer.RenderPipelines
 import net.minecraft.client.renderer.rendertype.LayeringTransform
@@ -24,17 +25,19 @@ object CustomRenderPipelines {
 
 	val GUI_TEXTURED_NO_DEPTH_TRIS =
 		RenderPipeline.builder(RenderPipelines.GUI_TEXTURED_SNIPPET)
-			.withVertexFormat(DefaultVertexFormat.POSITION_TEX_COLOR, Mode.TRIANGLES)
+			.withVertexBinding(0, DefaultVertexFormat.POSITION_TEX_COLOR)
+			.withPrimitiveTopology(PrimitiveTopology.TRIANGLES)
 			.withLocation(Firmament.identifier("gui_textured_overlay_tris"))
 			.withDepthStencilState(NO_DEPTH_TEST)
 			.withCull(false)
 			.build()
 	val COLORED_OMNIPRESENT_QUADS =
-		RenderPipeline.builder(RenderPipelines.MATRICES_PROJECTION_SNIPPET)// TODO: split this up to support better transparent ordering.
+		RenderPipeline.builder(RenderPipelines.DEBUG_FILLED_SNIPPET)// TODO: split this up to support better transparent ordering.
 			.withLocation(Firmament.identifier("colored_omnipresent_quads"))
 			.withVertexShader("core/position_color")
 			.withFragmentShader("core/position_color")
-			.withVertexFormat(DefaultVertexFormat.POSITION_COLOR, Mode.QUADS)
+			.withVertexBinding(0, DefaultVertexFormat.POSITION_COLOR)
+			.withPrimitiveTopology(PrimitiveTopology.QUADS)
 			.withDepthStencilState(NO_DEPTH_TEST)
 			.withCull(false)
 			.withColorTargetState(ColorTargetState(BlendFunction.TRANSLUCENT))
@@ -42,9 +45,14 @@ object CustomRenderPipelines {
 
 	val CIRCLE_FILTER_TRANSLUCENT_GUI_TRIS =
 		RenderPipeline.builder(RenderPipelines.GUI_TEXTURED_SNIPPET)
-			.withVertexFormat(DefaultVertexFormat.POSITION_TEX_COLOR, Mode.TRIANGLES)
+			.withVertexBinding(0, DefaultVertexFormat.POSITION_TEX_COLOR)
+			.withPrimitiveTopology(PrimitiveTopology.TRIANGLES)
 			.withLocation(Firmament.identifier("gui_textured_overlay_tris_circle"))
-			.withUniform("CutoutRadius", UniformType.UNIFORM_BUFFER)
+			.withBindGroupLayout(
+				BindGroupLayout.builder()
+					.withUniform("CutoutRadius", UniformType.UNIFORM_BUFFER)
+					.build()
+			)
 			.withFragmentShader(Firmament.identifier("circle_discard_color"))
 //			.withBlend(BlendFunction.TRANSLUCENT)
 			.build()
@@ -52,10 +60,14 @@ object CustomRenderPipelines {
 		RenderPipeline.builder(RenderPipelines.ENTITY_SNIPPET)
 			.withLocation(Firmament.identifier("parallax_cape"))
 			.withFragmentShader(Firmament.identifier("cape/parallax"))
-			.withSampler("Sampler0")
-			.withSampler("Sampler1")
-			.withSampler("Sampler3")
-			.withUniform("Animation", UniformType.UNIFORM_BUFFER)
+			.withBindGroupLayout(
+				BindGroupLayout.builder()
+					.withSampler("Sampler0")
+					.withSampler("Sampler1")
+					.withSampler("Sampler3")
+					.withUniform("Animation", UniformType.UNIFORM_BUFFER)
+					.build()
+			)
 			.build()
 	val OMNIPRESENT_LINES = RenderPipeline.builder(RenderPipelines.LINES_SNIPPET)
 		.withDepthStencilState(NO_DEPTH_TEST)
@@ -73,7 +85,6 @@ object CustomRenderLayers {
 		RenderType.create(
 			"firmament_gui_textured_overlay_tris",
 			RenderSetup.builder(CustomRenderPipelines.GUI_TEXTURED_NO_DEPTH_TRIS)
-				.bufferSize(RenderType.TRANSIENT_BUFFER_SIZE)
 				.withTexture("Sampler0", texture)
 				.createRenderSetup()
 		)
@@ -90,7 +101,6 @@ object CustomRenderLayers {
 		"firmament_quads",
 		RenderSetup
 			.builder(CustomRenderPipelines.COLORED_OMNIPRESENT_QUADS)
-			.bufferSize(RenderType.TRANSIENT_BUFFER_SIZE)
 			.createRenderSetup()
 	)
 
@@ -106,7 +116,6 @@ object CustomRenderLayers {
 		RenderType.create(
 			"firmament_translucent_circle_gui",
 			RenderSetup.builder(CustomRenderPipelines.CIRCLE_FILTER_TRANSLUCENT_GUI_TRIS)
-				.bufferSize(RenderType.TRANSIENT_BUFFER_SIZE)
 				.createRenderSetup()
 		)
 }

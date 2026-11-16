@@ -1,5 +1,6 @@
 package moe.nea.firmament.util.mc
 
+import com.mojang.blaze3d.PrimitiveTopology
 import com.mojang.blaze3d.buffers.GpuBuffer
 import com.mojang.blaze3d.buffers.GpuBufferSlice
 import com.mojang.blaze3d.buffers.Std140Builder
@@ -9,10 +10,11 @@ import com.mojang.blaze3d.systems.RenderSystem
 import com.mojang.blaze3d.vertex.VertexFormat
 import java.nio.ByteBuffer
 import java.nio.ByteOrder
+import java.util.Optional
 import java.util.OptionalDouble
-import java.util.OptionalInt
 import org.joml.Vector3f
 import org.joml.Vector4f
+import org.joml.Vector4fc
 import com.mojang.blaze3d.pipeline.RenderTarget
 import com.mojang.blaze3d.vertex.BufferBuilder
 import com.mojang.blaze3d.vertex.MeshData
@@ -27,7 +29,7 @@ import moe.nea.firmament.util.MC
 
 class CustomRenderPassHelper(
 	val labelSupplier: () -> String,
-	val drawMode: VertexFormat.Mode,
+	val drawMode: PrimitiveTopology,
 	val vertexFormat: VertexFormat,
 	val frameBuffer: RenderTarget,
 	val hasDepth: Boolean,
@@ -67,7 +69,7 @@ class CustomRenderPassHelper(
 		setUniform(
 			"DynamicTransforms", RenderSystem.getDynamicUniforms()
 				.writeTransform(
-					RenderSystem.getModelViewMatrix(),
+					RenderSystem.getModelViewMatrixCopy(),
 					Vector4f(1.0F, 1.0F, 1.0F, 1.0F),
 					Vector3f(), // TODO: 1.21.10
 					Matrix4f()
@@ -97,12 +99,12 @@ class CustomRenderPassHelper(
 		queueClose(buffer)
 		ErrorUtil.softCheck("Vertices have already been uploaded", vertices == null)
 		vertices = buffer
-		val vertexBuffer = vertexFormat.uploadImmediateVertexBuffer(buffer.vertexBuffer())
+		val vertexBuffer = queueClose(device.createBuffer(labelSupplier::invoke, GpuBuffer.USAGE_VERTEX, buffer.vertexBuffer()))
 		val indexBufferConstructor = RenderSystem.getSequentialBuffer(drawMode)
 		val indexBuffer = indexBufferConstructor.getBuffer(buffer.drawState().indexCount)
 		queueAction {
 			it.setIndexBuffer(indexBuffer, indexBufferConstructor.type())
-			it.setVertexBuffer(0, vertexBuffer)
+			it.setVertexBuffer(0, vertexBuffer.slice())
 		}
 	}
 
@@ -143,7 +145,7 @@ class CustomRenderPassHelper(
 			commandEncoder.createRenderPass(
 				labelSupplier::invoke,
 				RenderSystem.outputColorTextureOverride ?: frameBuffer.colorTextureView!!,
-				OptionalInt.empty(),
+				Optional.empty<Vector4fc>(),
 				(RenderSystem.outputDepthTextureOverride
 					?: frameBuffer.depthTextureView).takeIf { frameBuffer.useDepth && hasDepth },
 				OptionalDouble.empty()
@@ -154,7 +156,8 @@ class CustomRenderPassHelper(
 			0,
 			0,
 			vertexData.drawState().indexCount,
-			1
+			1,
+			0
 		)
 		return DrawToken
 	}

@@ -81,7 +81,7 @@ public class JarvisConfigSearch extends Screen {
     @Override
     public void onClose() {
         assert minecraft != null;
-        minecraft.setScreen(parentScreen);
+        minecraft.gui.setScreen(parentScreen);
     }
 
     @Override
@@ -116,7 +116,7 @@ public class JarvisConfigSearch extends Screen {
             int height = 15 + filteredOption.option().description().size() * 10;
             if (0 <= mouseX && mouseX < searchFieldWidth &&
                 0 <= mouseY && mouseY < height) {
-                minecraft.setScreen(filteredOption.option().jumpTo(this));
+                minecraft.gui.setScreen(filteredOption.option().jumpTo(this));
                 return true;
             }
             mouseY -= height;

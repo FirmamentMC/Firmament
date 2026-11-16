@@ -107,7 +107,7 @@ class KJsonOps : DynamicOps<JsonElement> {
 		if (input is JsonPrimitive) {
 			if (input.booleanOrNull != null)
 				return DataResult.success(input.boolean)
-			return super.getBooleanValue(input)
+			return DataResult.error { "Not a boolean: $input" }
 		}
 		return DataResult.error { "Not a boolean: $input" }
 	}

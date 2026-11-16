@@ -243,7 +243,7 @@ fun firmamentCommand(ctx: CommandBuildContext) = literal("firmament") {
 		thenLiteral("simulate") {
 			thenArgument("message", RestArgumentType) { message ->
 				thenExecute {
-					MC.instance.chatListener.handleSystemMessage(Component.literal(get(message)), false)
+					MC.instance.gui.chatListener().handleSystemMessage(Component.literal(get(message)), false)
 				}
 			}
 		}
@@ -285,14 +285,14 @@ fun firmamentCommand(ctx: CommandBuildContext) = literal("firmament") {
 		}
 		thenLiteral("dumpchat") {
 			thenExecute {
-				MC.inGameHud.chat.messages.forEach {
+				MC.inGameHud.hud.chat.messages.forEach {
 					val nbt = ComponentSerialization.CODEC.encodeStart(NbtOps.INSTANCE, it.content).orThrow
 					println(nbt)
 				}
 			}
 			thenArgument("search", string()) { search ->
 				thenExecute {
-					MC.inGameHud.chat.messages
+					MC.inGameHud.hud.chat.messages
 						.filter { this[search] in it.content.unformattedString }
 						.forEach {
 							val nbt = ComponentSerialization.CODEC.encodeStart(NbtOps.INSTANCE, it.content).orThrow

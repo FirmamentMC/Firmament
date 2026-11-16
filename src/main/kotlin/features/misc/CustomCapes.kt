@@ -5,9 +5,10 @@ import kotlin.time.Duration
 import kotlin.time.Duration.Companion.seconds
 import net.minecraft.client.player.AbstractClientPlayer
 import com.mojang.blaze3d.vertex.VertexConsumer
-import net.minecraft.client.renderer.MultiBufferSource
+import net.minecraft.client.renderer.SubmitNodeCollector
 import net.minecraft.client.renderer.entity.state.AvatarRenderState
 import com.mojang.blaze3d.vertex.PoseStack
+import net.minecraft.client.renderer.rendertype.OutputTarget
 import net.minecraft.client.renderer.rendertype.RenderType
 import net.minecraft.world.entity.player.PlayerSkin
 import net.minecraft.core.ClientAsset
@@ -31,7 +32,7 @@ object CustomCapes {
 	interface CustomCapeRenderer {
 		fun replaceRender(
             renderLayer: RenderType,
-            vertexConsumerProvider: MultiBufferSource,
+            submitNodeCollector: SubmitNodeCollector,
             matrixStack: PoseStack,
             model: (VertexConsumer) -> Unit
 		)
@@ -42,11 +43,11 @@ object CustomCapes {
 	) : CustomCapeRenderer {
 		override fun replaceRender(
             renderLayer: RenderType,
-            vertexConsumerProvider: MultiBufferSource,
+            submitNodeCollector: SubmitNodeCollector,
             matrixStack: PoseStack,
             model: (VertexConsumer) -> Unit
 		) {
-//			model(vertexConsumerProvider.getBuffer(RenderType.entitySolid(location)))
+//			submitNodeCollector.submitCustomGeometry(matrixStack, RenderTypes.entitySolid(location)) { _, buf -> model(buf) }
 		}
 	}
 
@@ -58,16 +59,16 @@ object CustomCapes {
 	) : CustomCapeRenderer {
 		override fun replaceRender(
             renderLayer: RenderType,
-            vertexConsumerProvider: MultiBufferSource,
+            submitNodeCollector: SubmitNodeCollector,
             matrixStack: PoseStack,
             model: (VertexConsumer) -> Unit
 		) {
 			val animationValue = (startTime.passedTime() / animationSpeed).mod(1F)
 			CustomRenderPassHelper(
 				{ "Firmament Cape Renderer" },
-				renderLayer.mode(),
+				renderLayer.primitiveTopology(),
 				renderLayer.format(),
-				MC.instance.mainRenderTarget,
+				OutputTarget.MAIN_TARGET.getRenderTarget(),
 				true,
 			).use { renderPass ->
 				renderPass.setPipeline(CustomRenderPipelines.PARALLAX_CAPE_SHADER)

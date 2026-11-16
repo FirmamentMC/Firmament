@@ -4,6 +4,7 @@ import me.shedaniel.math.Color
 import kotlin.time.Duration.Companion.seconds
 import net.minecraft.network.chat.Component
 import net.minecraft.core.BlockPos
+import moe.nea.firmament.util.center
 import moe.nea.firmament.annotations.Subscribe
 import moe.nea.firmament.events.ProcessChatEvent
 import moe.nea.firmament.events.WorldReadyEvent

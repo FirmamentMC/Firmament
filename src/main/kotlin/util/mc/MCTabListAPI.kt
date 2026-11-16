@@ -78,7 +78,7 @@ object MCTabListAPI {
 	private fun getTabListNow(): CurrentTabList {
 		// This is a precondition for PlayerListHud.collectEntries to be valid
 		MC.networkHandler ?: return CurrentTabList(Optional.empty(), Optional.empty(), emptyList())
-		val hud = MC.inGameHud.tabList.cast()
+		val hud = MC.inGameHud.hud.tabList.cast()
 		val entries = hud.collectPlayerEntries_firmament()
 			.map {
 				it.tabListDisplayName ?: run {

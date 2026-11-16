@@ -99,7 +99,7 @@ object ChatLinks {
 	fun ChatComponent.findComponentAtMousePos(x: Int, y: Int): Style? {
 		val clickableStyleFinder = ClickableStyleFinder(MC.font, x,y)
 			.includeInsertions(false)
-		captureClickableText(clickableStyleFinder, MC.window.guiScaledHeight, MC.instance.gui.guiTicks, ChatComponent.DisplayMode.FOREGROUND)
+		captureClickableText(clickableStyleFinder, MC.window.guiScaledHeight, MC.instance.gui.hud.guiTicks, ChatComponent.DisplayMode.FOREGROUND)
 		return clickableStyleFinder.result()
 	}
 
@@ -109,7 +109,7 @@ object ChatLinks {
 		if (!TConfig.imageEnabled) return
 		if (it.screen !is ChatScreen) return
 		val hoveredComponent =
-			MC.inGameHud.chat.findComponentAtMousePos(it.mouseX, it.mouseY) ?: return
+			MC.inGameHud.hud.chat.findComponentAtMousePos(it.mouseX, it.mouseY) ?: return
 		val hoverEvent = hoveredComponent.hoverEvent as? HoverEvent.ShowText ?: return
 		val value = hoverEvent.value
 		val url = urlRegex.matchEntire(value.unformattedString)?.groupValues?.get(0) ?: return

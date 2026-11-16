@@ -6,6 +6,7 @@ import kotlinx.serialization.serializer
 import net.minecraft.client.gui.screens.inventory.ContainerScreen
 import net.minecraft.client.gui.screens.inventory.AbstractContainerScreen
 import net.minecraft.world.entity.player.Inventory
+import net.minecraft.world.item.DyeColor
 import net.minecraft.world.item.Items
 import net.minecraft.network.protocol.game.ServerboundContainerClosePacket
 import net.minecraft.network.chat.Component
@@ -102,7 +103,7 @@ object StorageOverlay {
 	@Subscribe
 	fun onClick(event: SlotClickEvent) {
 		if (lastStorageOverlay != null && event.slot.container !is Inventory && event.slot.containerSlot < 9
-			&& event.stack.item != Items.BLACK_STAINED_GLASS_PANE
+			&& event.stack.item != Items.STAINED_GLASS_PANE.pick(DyeColor.BLACK)
 		) {
 			skipNextStorageOverlayBackflip = true
 		}

@@ -18,7 +18,7 @@ object ScreenUtil {
             if (p?.containerMenu != null) {
                 p.closeContainer()
             }
-            minecraft.setScreen(nextOpenedGui)
+            minecraft.gui.setScreen(nextOpenedGui)
             nextOpenedGui = null
         }
     }

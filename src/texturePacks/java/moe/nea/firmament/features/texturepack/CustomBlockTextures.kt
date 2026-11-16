@@ -227,10 +227,8 @@ object CustomBlockTextures {
 		currentIslandReplacements = replacements
 		if (lastReplacements != replacements) {
 			MC.nextTick {
-				MC.worldRenderer.viewArea?.sections?.forEach {
-					// false schedules rebuilds outside a 27 block radius to happen async
-					// nb: this sets the dirty but to true, the boolean parameter specifies the update behaviour
-					it.setDirty(false)
+				MC.worldRenderer.visibleSections().forEach {
+					it.reset()
 				}
 				sodiumReloadTask?.run()
 			}

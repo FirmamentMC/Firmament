@@ -8,7 +8,7 @@ import kotlin.math.abs
 import net.minecraft.client.renderer.RenderPipelines
 import net.minecraft.client.gui.GuiGraphicsExtractor
 import net.minecraft.client.gui.navigation.ScreenRectangle
-import net.minecraft.client.renderer.MultiBufferSource
+import net.minecraft.client.renderer.SubmitNodeCollector
 import com.mojang.blaze3d.vertex.PoseStack
 import net.minecraft.client.TextureFilteringMethod
 import net.minecraft.client.renderer.rendertype.RenderTypes
@@ -74,15 +74,15 @@ data class LineRenderState(
 		BOTTOM_LEFT_TO_TOP_RIGHT,
 	}
 
-	override fun createRenderer(vertexConsumers: MultiBufferSource.BufferSource): MultiSpecialGuiRenderer<out MultiSpecialGuiRenderState> {
-		return LineRenderer(vertexConsumers)
+	override fun createRenderer(): MultiSpecialGuiRenderer<out MultiSpecialGuiRenderState> {
+		return LineRenderer()
 	}
 
 	override val scissorArea = null
 }
 
-class LineRenderer(vertexConsumers: MultiBufferSource.BufferSource) :
-	MultiSpecialGuiRenderer<LineRenderState>(vertexConsumers) {
+class LineRenderer() :
+	MultiSpecialGuiRenderer<LineRenderState>() {
 	override fun getRenderStateClass(): Class<LineRenderState> {
 		return LineRenderState::class.java
 	}
@@ -93,25 +93,9 @@ class LineRenderer(vertexConsumers: MultiBufferSource.BufferSource) :
 
 	override fun renderToTexture(
 		state: LineRenderState,
-		matrices: PoseStack
+		matrices: PoseStack,
+		submitNodeCollector: SubmitNodeCollector
 	) {
-		val gr = MC.instance.gameRenderer
-		val client = MC.instance
-
-		gr.globalSettingsUniform
-			.update(
-				state.bounds.width,
-				state.bounds.height,
-				client.options.glintStrength().get(),
-				client.level?.gameTime ?: 0L,
-				client.deltaTracker,
-				client.options.menuBackgroundBlurriness,
-				gr.mainCamera.position(),
-				client.options.textureFiltering().get() == TextureFilteringMethod.RGSS
-			) // TODO: is this viewport mangling still needed with the new line shader in 1.21.11
-
-		val buf = bufferSource.getBuffer(RenderTypes.LINES)
-		val matrix = matrices.last()
 		val wh = state.w / 2F
 		val hh = state.h / 2F
 		val lowX = -wh
@@ -119,24 +103,14 @@ class LineRenderer(vertexConsumers: MultiBufferSource.BufferSource) :
 		val highX = wh
 		val highY = -lowY
 		val norm = Vector3f(highX - lowX, highY - lowY, 0F).normalize()
-		buf.addVertex(matrix, lowX, lowY, 0F).setColor(state.color)
-			.setNormal(matrix, norm)
-			.setLineWidth(state.lineWidth)
-		buf.addVertex(matrix, highX, highY, 0F).setColor(state.color)
-			.setNormal(matrix, norm)
-			.setLineWidth(state.lineWidth)
-		bufferSource.endBatch()
-		gr.globalSettingsUniform
-			.update(
-				client.window.width,
-				client.window.height,
-				client.options.glintStrength().get(),
-				client.level?.gameTime ?: 0L,
-				client.deltaTracker,
-				client.options.menuBackgroundBlurriness,
-				gr.mainCamera.position(),
-				client.options.textureFiltering().get() == TextureFilteringMethod.RGSS
-			)
+		submitNodeCollector.submitCustomGeometry(matrices, RenderTypes.LINES) { matrix, buf ->
+			buf.addVertex(matrix, lowX, lowY, 0F).setColor(state.color)
+				.setNormal(matrix, norm)
+				.setLineWidth(state.lineWidth)
+			buf.addVertex(matrix, highX, highY, 0F).setColor(state.color)
+				.setNormal(matrix, norm)
+				.setLineWidth(state.lineWidth)
+		}
 	}
 
 	override fun getTextureLabel(): String {

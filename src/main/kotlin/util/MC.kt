@@ -40,9 +40,9 @@ object MC {
 
 	init {
 		TickEvent.subscribe("MC:push") {
-			if (inGameHud.chat != null && world != null)
+			if (inGameHud.hud.chat != null && world != null)
 				while (true) {
-					inGameHud.chat.addClientSystemMessage(messageQueue.poll() ?: break)
+					inGameHud.hud.chat.addClientSystemMessage(messageQueue.poll() ?: break)
 				}
 			while (true) {
 				(nextTickTodos.poll() ?: break).invoke()
@@ -58,8 +58,8 @@ object MC {
 			Firmament.logger.info("CHAT: ${text.string}")
 			return
 		}
-		if (instance.isSameThread && inGameHud.chat != null && world != null)
-			inGameHud.chat.addClientSystemMessage(text)
+		if (instance.isSameThread && inGameHud.hud.chat != null && world != null)
+			inGameHud.hud.chat.addClientSystemMessage(text)
 		else
 			messageQueue.add(text)
 	}
@@ -115,10 +115,10 @@ object MC {
 	inline val world: ClientLevel? get() = TestUtil.unlessTesting { instance.level }
 	inline val playerName: String get() = player?.name?.unformattedString ?: MC.instance.user.name
 	inline var screen: Screen?
-		get() = TestUtil.unlessTesting { instance.screen }
-		set(value) = instance.setScreen(value)
+		get() = TestUtil.unlessTesting { instance.gui.screen() }
+		set(value) = instance.gui.setScreen(value)
 	val screenName get() = screen?.title?.unformattedString?.trim()
-	inline val handledScreen: AbstractContainerScreen<*>? get() = instance.screen as? AbstractContainerScreen<*>
+	inline val handledScreen: AbstractContainerScreen<*>? get() = instance.gui.screen() as? AbstractContainerScreen<*>
 	inline val window get() = instance.window
 	inline val currentRegistries: HolderLookup.Provider? get() = world?.registryAccess()
 	val defaultRegistries: HolderLookup.Provider by lazy { VanillaRegistries.createLookup() }

@@ -45,6 +45,7 @@ import moe.nea.firmament.util.MinecraftDispatcher
 import moe.nea.firmament.util.SkyblockId
 import moe.nea.firmament.util.TestUtil
 import moe.nea.firmament.util.directLiteralStringContent
+import moe.nea.firmament.util.isColor
 import moe.nea.firmament.util.mc.DataComponentAccessor
 import moe.nea.firmament.util.mc.DataComponentMutator
 import moe.nea.firmament.util.mc.FirmamentDataComponentTypes

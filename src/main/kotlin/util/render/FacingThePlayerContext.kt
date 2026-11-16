@@ -9,6 +9,7 @@ import net.minecraft.client.renderer.rendertype.RenderTypes
 import net.minecraft.network.chat.Component
 import net.minecraft.resources.Identifier
 import net.minecraft.core.BlockPos
+import moe.nea.firmament.util.center
 import net.minecraft.util.LightCoordsUtil
 import moe.nea.firmament.util.FirmFormatters
 import moe.nea.firmament.util.MC
@@ -34,31 +35,34 @@ class FacingThePlayerContext(val worldContext: RenderInWorldContext) {
             worldContext.matrixStack.pushPose()
             val width = MC.font.width(text)
             worldContext.matrixStack.translate(-width / 2F, verticalAlign.align(index, texts.size), 0F)
-            val vertexConsumer: VertexConsumer =
-                worldContext.vertexConsumers.getBuffer(RenderTypes.textBackgroundSeeThrough())
-            val matrix4f = worldContext.matrixStack.last().pose()
-            vertexConsumer.addVertex(matrix4f, -1.0f, -1.0f, 0.0f).setColor(background)
-                .setLight(LightCoordsUtil.FULL_BRIGHT)
-            vertexConsumer.addVertex(matrix4f, -1.0f, MC.font.lineHeight.toFloat(), 0.0f).setColor(background)
-                .setLight(LightCoordsUtil.FULL_BRIGHT)
-            vertexConsumer.addVertex(matrix4f, width.toFloat(), MC.font.lineHeight.toFloat(), 0.0f)
-                .setColor(background)
-                .setLight(LightCoordsUtil.FULL_BRIGHT)
-            vertexConsumer.addVertex(matrix4f, width.toFloat(), -1.0f, 0.0f).setColor(background)
-                .setLight(LightCoordsUtil.FULL_BRIGHT)
+            worldContext.submitNodeCollector.submitCustomGeometry(
+                worldContext.matrixStack,
+                RenderTypes.textBackgroundSeeThrough()
+            ) { pose, vertexConsumer ->
+                val matrix4f = pose.pose()
+                vertexConsumer.addVertex(matrix4f, -1.0f, -1.0f, 0.0f).setColor(background)
+                    .setLight(LightCoordsUtil.FULL_BRIGHT)
+                vertexConsumer.addVertex(matrix4f, -1.0f, MC.font.lineHeight.toFloat(), 0.0f).setColor(background)
+                    .setLight(LightCoordsUtil.FULL_BRIGHT)
+                vertexConsumer.addVertex(matrix4f, width.toFloat(), MC.font.lineHeight.toFloat(), 0.0f)
+                    .setColor(background)
+                    .setLight(LightCoordsUtil.FULL_BRIGHT)
+                vertexConsumer.addVertex(matrix4f, width.toFloat(), -1.0f, 0.0f).setColor(background)
+                    .setLight(LightCoordsUtil.FULL_BRIGHT)
+            }
             worldContext.matrixStack.translate(0F, 0F, 0.01F)
 
-            MC.font.drawInBatch(
-                text,
+            worldContext.submitNodeCollector.submitText(
+                worldContext.matrixStack,
                 0F,
                 0F,
-                -1,
+                text.visualOrderText,
                 false,
-                worldContext.matrixStack.last().pose(),
-                worldContext.vertexConsumers,
                 Font.DisplayMode.SEE_THROUGH,
+                LightCoordsUtil.FULL_BRIGHT,
+                -1,
                 0,
-				LightCoordsUtil.FULL_BRIGHT
+                0
             )
             worldContext.matrixStack.popPose()
         }
@@ -70,23 +74,26 @@ class FacingThePlayerContext(val worldContext: RenderInWorldContext) {
 		u1: Float, v1: Float,
 		u2: Float, v2: Float,
     ) {
-		val buf = worldContext.vertexConsumers.getBuffer(CustomRenderLayers.GUI_TEXTURED_NO_DEPTH_TRIS.apply(texture)) // TODO: this is strictly an incorrect render layer
         val hw = width / 2F
         val hh = height / 2F
-        val matrix4f: Matrix4f = worldContext.matrixStack.last().pose()
-        buf.addVertex(matrix4f, -hw, -hh, 0F)
-            .setColor(-1)
-            .setUv(u1, v1)
-        buf.addVertex(matrix4f, -hw, +hh, 0F)
-            .setColor(-1)
-            .setUv(u1, v2)
-        buf.addVertex(matrix4f, +hw, +hh, 0F)
-            .setColor(-1)
-            .setUv(u2, v2)
-        buf.addVertex(matrix4f, +hw, -hh, 0F)
-            .setColor(-1)
-            .setUv(u2, v1)
-	    worldContext.vertexConsumers.endBatch()
+        worldContext.submitNodeCollector.submitCustomGeometry(
+            worldContext.matrixStack,
+            CustomRenderLayers.GUI_TEXTURED_NO_DEPTH_TRIS.apply(texture) // TODO: this is strictly an incorrect render layer
+        ) { pose, buf ->
+            val matrix4f: Matrix4f = pose.pose()
+            buf.addVertex(matrix4f, -hw, -hh, 0F)
+                .setColor(-1)
+                .setUv(u1, v1)
+            buf.addVertex(matrix4f, -hw, +hh, 0F)
+                .setColor(-1)
+                .setUv(u1, v2)
+            buf.addVertex(matrix4f, +hw, +hh, 0F)
+                .setColor(-1)
+                .setUv(u2, v2)
+            buf.addVertex(matrix4f, +hw, -hh, 0F)
+                .setColor(-1)
+                .setUv(u2, v1)
+        }
     }
 
 }

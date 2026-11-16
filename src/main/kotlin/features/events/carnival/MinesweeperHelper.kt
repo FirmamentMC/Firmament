@@ -12,6 +12,7 @@ import net.minecraft.world.item.Items
 import net.minecraft.network.chat.ClickEvent
 import net.minecraft.network.chat.Component
 import net.minecraft.core.BlockPos
+import moe.nea.firmament.util.center
 import net.minecraft.world.level.LevelAccessor
 import moe.nea.firmament.annotations.Subscribe
 import moe.nea.firmament.commands.thenExecute

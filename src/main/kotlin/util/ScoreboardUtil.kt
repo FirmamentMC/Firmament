@@ -26,7 +26,7 @@ object ScoreboardUtil {
 		val activeObjective = scoreboard.getDisplayObjective(DisplaySlot.SIDEBAR) ?: return listOf()
 		return scoreboard.listPlayerScores(activeObjective)
 			.filter { !it.isHidden() }
-			.sortedWith(Gui.SCORE_DISPLAY_ORDER)
+			.sortedWith(compareByDescending<net.minecraft.world.scores.PlayerScoreEntry> { it.value }.thenBy { it.owner })
 			.take(15).map {
 				val team = scoreboard.getPlayersTeam(it.owner)
 				val text = it.ownerName()
@@ -38,9 +38,9 @@ object ScoreboardUtil {
 fun Component.formattedString(): String {
 	val sb = StringBuilder()
 	visit(FormattedText.StyledContentConsumer<Unit> { style, string ->
-		val c = ChatFormatting.getByName(style.color?.serialize())
+		val c = style.color?.toChatFormatting()
 		if (c != null) {
-			sb.append("§${c.char}")
+			sb.append(c.toString())
 		}
 		if (style.isUnderlined) {
 			sb.append("§n")

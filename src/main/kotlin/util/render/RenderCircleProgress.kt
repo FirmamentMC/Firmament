@@ -1,13 +1,14 @@
 package moe.nea.firmament.util.render
 
-import com.mojang.blaze3d.vertex.VertexFormat
+import com.mojang.blaze3d.PrimitiveTopology
 import util.render.CustomRenderLayers
 import net.minecraft.client.gui.GuiGraphicsExtractor
 import net.minecraft.client.gui.navigation.ScreenRectangle
 import com.mojang.blaze3d.vertex.BufferBuilder
-import net.minecraft.client.renderer.MultiBufferSource
+import net.minecraft.client.renderer.SubmitNodeCollector
 import com.mojang.blaze3d.vertex.ByteBufferBuilder
 import com.mojang.blaze3d.vertex.PoseStack
+import net.minecraft.client.renderer.rendertype.OutputTarget
 import net.minecraft.client.renderer.rendertype.RenderType
 import net.minecraft.resources.Identifier
 import moe.nea.firmament.util.MC
@@ -35,37 +36,66 @@ object RenderCircleProgress {
 		override val bounds: ScreenRectangle?,
 		override val scissorArea: ScreenRectangle?,
 	) : MultiSpecialGuiRenderState() {
-		override fun createRenderer(vertexConsumers: MultiBufferSource.BufferSource): MultiSpecialGuiRenderer<out MultiSpecialGuiRenderState> {
-			return Renderer(vertexConsumers)
+		override fun createRenderer(): MultiSpecialGuiRenderer<out MultiSpecialGuiRenderState> {
+			return Renderer()
 		}
 	}
 
-	class Renderer(vertexConsumers: MultiBufferSource.BufferSource) :
-		MultiSpecialGuiRenderer<State>(vertexConsumers) {
+	class Renderer() :
+		MultiSpecialGuiRenderer<State>() {
 		override fun renderToTexture(
 			state: State,
-			matrices: PoseStack
+			matrices: PoseStack,
+			submitNodeCollector: SubmitNodeCollector
 		) {
 			matrices.pushPose()
 			matrices.translate(0F, -1F, 0F)
 			val sections = state.angleRadians.nonNegligibleSubSectionsAlignedWith((τ / 8f).toFloat())
 				.zipWithNext().toList()
-			if (sections.isEmpty()) return
+			if (sections.isEmpty()) {
+				matrices.popPose()
+				return
+			}
 			val u1 = state.u1
 			val u2 = state.u2
 			val v1 = state.v1
 			val v2 = state.v2
 			val color = state.color
+			fun ilerp(f: Float): Float =
+				ilerp(-1f, 1f, f)
+			if (state.innerCutoutRadius <= 0) {
+				submitNodeCollector.submitCustomGeometry(matrices, state.layer) { pose, buf ->
+					val matrix = pose.pose()
+					for ((sectionStart, sectionEnd) in sections) {
+						val firstPoint = Projections.Two.projectAngleOntoUnitBox(sectionStart.toDouble())
+						val secondPoint = Projections.Two.projectAngleOntoUnitBox(sectionEnd.toDouble())
+						buf
+							.addVertex(matrix, secondPoint.x, secondPoint.y, 0F)
+							.setUv(lerp(u1, u2, ilerp(secondPoint.x)), lerp(v1, v2, ilerp(secondPoint.y)))
+							.setColor(color)
+
+						buf
+							.addVertex(matrix, firstPoint.x, firstPoint.y, 0F)
+							.setUv(lerp(u1, u2, ilerp(firstPoint.x)), lerp(v1, v2, ilerp(firstPoint.y)))
+							.setColor(color)
+
+						buf
+							.addVertex(matrix, 0F, 0F, 0F)
+							.setUv(lerp(u1, u2, ilerp(0F)), lerp(v1, v2, ilerp(0F)))
+							.setColor(color)
+					}
+				}
+				matrices.popPose()
+				return
+			}
 			val matrix = matrices.last().pose()
 			ByteBufferBuilder(state.layer.format().vertexSize * sections.size * 3).use { allocator ->
 
-				val bufferBuilder = BufferBuilder(allocator, VertexFormat.Mode.TRIANGLES, state.layer.format())
+				val bufferBuilder = BufferBuilder(allocator, PrimitiveTopology.TRIANGLES, state.layer.format())
 
 				for ((sectionStart, sectionEnd) in sections) {
 					val firstPoint = Projections.Two.projectAngleOntoUnitBox(sectionStart.toDouble())
 					val secondPoint = Projections.Two.projectAngleOntoUnitBox(sectionEnd.toDouble())
-					fun ilerp(f: Float): Float =
-						ilerp(-1f, 1f, f)
 
 					bufferBuilder
 						.addVertex(matrix, secondPoint.x, secondPoint.y, 0F)
@@ -85,15 +115,11 @@ object RenderCircleProgress {
 				}
 
 				bufferBuilder.buildOrThrow().use { buffer ->
-					if (state.innerCutoutRadius <= 0) {
-						state.layer.draw(buffer)
-						return
-					}
 					CustomRenderPassHelper(
 						{ "RenderCircleProgress" },
-						VertexFormat.Mode.TRIANGLES,
+						PrimitiveTopology.TRIANGLES,
 						state.layer.format(),
-						MC.instance.mainRenderTarget,
+						OutputTarget.MAIN_TARGET.getRenderTarget(),
 						false,
 					).use { renderPass ->
 						renderPass.uploadVertices(buffer)

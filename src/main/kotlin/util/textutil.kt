@@ -12,6 +12,7 @@ import net.minecraft.network.chat.Component
 import net.minecraft.network.chat.TextColor
 import net.minecraft.network.chat.contents.TranslatableContents
 import net.minecraft.ChatFormatting
+import net.minecraft.core.BlockPos
 
 
 val formattingChars = "kmolnrKMOLNR".toSet()
@@ -133,7 +134,33 @@ private fun Style.toLegacyFormatString(): String {
 	return color
 }
 
-private val textColorLUT = ChatFormatting.entries
+val BlockPos.center: net.minecraft.world.phys.Vec3
+	get() = net.minecraft.world.phys.Vec3.atCenterOf(this)
+
+val ChatFormatting.color: Int?
+	get() = when (this) {
+		ChatFormatting.BLACK -> 0x000000
+		ChatFormatting.DARK_BLUE -> 0x0000AA
+		ChatFormatting.DARK_GREEN -> 0x00AA00
+		ChatFormatting.DARK_AQUA -> 0x00AAAA
+		ChatFormatting.DARK_RED -> 0xAA0000
+		ChatFormatting.DARK_PURPLE -> 0xAA00AA
+		ChatFormatting.GOLD -> 0xFFAA00
+		ChatFormatting.GRAY -> 0xAAAAAA
+		ChatFormatting.DARK_GRAY -> 0x555555
+		ChatFormatting.BLUE -> 0x5555FF
+		ChatFormatting.GREEN -> 0x55FF55
+		ChatFormatting.AQUA -> 0x55FFFF
+		ChatFormatting.RED -> 0xFF5555
+		ChatFormatting.LIGHT_PURPLE -> 0xFF55FF
+		ChatFormatting.YELLOW -> 0xFFFF55
+		ChatFormatting.WHITE -> 0xFFFFFF
+		else -> null
+	}
+
+val ChatFormatting.isColor: Boolean get() = color != null
+
+private val textColorLUT: Map<Int, ChatFormatting> = ChatFormatting.entries
 	.mapNotNull { formatting -> formatting.color?.let { it to formatting } }
 	.toMap()
 

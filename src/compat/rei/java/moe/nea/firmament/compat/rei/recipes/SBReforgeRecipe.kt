@@ -22,7 +22,7 @@ import me.shedaniel.rei.api.common.entry.EntryStack
 import net.minecraft.network.chat.Component
 import net.minecraft.resources.Identifier
 import net.minecraft.world.entity.EntitySpawnReason
-import net.minecraft.world.entity.EntityType
+import net.minecraft.world.entity.EntityTypes
 import net.minecraft.world.entity.npc.villager.VillagerProfession
 import moe.nea.firmament.Firmament
 import moe.nea.firmament.compat.rei.EntityWidget
@@ -118,7 +118,7 @@ class SBReforgeRecipe(
 					FloatingDimension(EntityWidget.defaultSize.width * size, EntityWidget.defaultSize.height * size)
 				list.add(Widgets.withTooltip(
 					EntityWidget(
-						EntityType.VILLAGER.create(EntityRenderer.fakeWorld, EntitySpawnReason.COMMAND)
+						EntityTypes.VILLAGER.create(EntityRenderer.fakeWorld, EntitySpawnReason.COMMAND)
 							?.also { it.villagerData = it.villagerData.withProfession(MC.currentOrDefaultRegistries,
 								VillagerProfession.WEAPONSMITH) },
 						Point(bounds.minX + 10 + 24 + 8 - dimension.width / 2, bounds.centerY - dimension.height / 2),

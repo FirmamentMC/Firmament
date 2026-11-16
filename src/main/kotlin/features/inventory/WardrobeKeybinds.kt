@@ -2,6 +2,7 @@ package moe.nea.firmament.features.inventory
 
 import org.lwjgl.glfw.GLFW
 import net.minecraft.client.gui.screens.inventory.AbstractContainerScreen
+import net.minecraft.world.item.DyeColor
 import net.minecraft.world.item.Items
 import moe.nea.firmament.annotations.Subscribe
 import moe.nea.firmament.events.HandledScreenKeyPressedEvent
@@ -70,8 +71,8 @@ object WardrobeKeybinds {
 		val invSlot = handler.getSlot(slot)
 
 		val itemStack = invSlot.item
-		val isSelected = itemStack.item == Items.LIME_DYE
-		val isSelectable = itemStack.item == Items.GRAY_DYE
+		val isSelected = itemStack.item == Items.DYE.pick(DyeColor.LIME)
+		val isSelectable = itemStack.item == Items.DYE.pick(DyeColor.GRAY)
 		if (!isSelectable && !isSelected) return
 		if (!TConfig.allowUnequipping && isSelected) return
 
